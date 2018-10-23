@@ -1,0 +1,338 @@
+#include "syntax.h"
+
+Syntax::Syntax(TScaner *sc)
+{
+    this->sc = sc;
+}
+
+void Syntax::program(){
+    TLexem l;
+    int t;
+    t = sc->scaner(l);
+    if (t != CLASS) sc->printError("ќжидалось class", l);
+
+    t = sc->scaner(l);
+    if (t != MAIN) sc->printError("ќжидалось Main", l);
+
+    t = sc->scaner(l);
+    if (t != OPENBRACE) sc->printError("ќжидалось {", l);
+
+    descript();
+
+    t = sc->scaner(l);
+    if (t != CLOSEBRACE) sc->printError("ќжидалось }", l);
+}
+
+void Syntax::descript(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+    sc->setUk(uk1);
+    while(t == VOID || t == INT || t == DOUBLE){
+        if (t == VOID)
+            mainfunc();
+        else data();
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+        sc->setUk(uk1);
+    }
+}
+
+void Syntax::mainfunc(){
+    TLexem l;
+    int t;
+
+    t = sc->scaner(l);
+    if (t != VOID) sc->printError("ќжидалось void", l);
+
+    t = sc->scaner(l);
+    if (t != MAINFUNC) sc->printError("ќжидалось main", l);
+
+    t = sc->scaner(l);
+    if (t != OPENBRACKET) sc->printError("ќжидалось (", l);
+
+    t = sc->scaner(l);
+    if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);
+
+    compOperator();
+}
+
+void Syntax::data(){
+    TLexem l;
+    int t, uk1;
+
+    t = sc->scaner(l);
+    if (t != INT && t != DOUBLE) sc->printError("ќжидалось int или double", l);
+
+    do{
+        t = sc->scaner(l);
+        if (t != ID) sc->printError("ќжидалс€ идентификатор", l);
+
+        //----------------------------
+        t = sc->scaner(l);
+
+        if (t == ASSIGN)
+        {
+            expression();
+            t = sc->scaner(l);
+        }
+
+        //----------------------------
+
+        //t = sc->scaner(l);
+    }while(t == COMMA);
+
+    if (t != SEMICOLON) sc->printError("ќжидалось ;", l);
+}
+
+void Syntax::operAndDesc(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+    sc->setUk(uk1);
+    while(t == INT || t == DOUBLE || t == ID || t == OPENBRACE || t == SWITCH || t == SEMICOLON ){
+        if (t == INT || t == DOUBLE)
+            data();
+        else operat();
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+        sc->setUk(uk1);
+    }
+}
+
+void Syntax::compOperator(){
+    TLexem l;
+    int t;
+
+    t = sc->scaner(l);
+    if (t != OPENBRACE) sc->printError("ќжидалось {", l);
+
+    operAndDesc();
+
+    t = sc->scaner(l);
+    if (t != CLOSEBRACE) sc->printError("ќжидалось }", l);
+}
+
+void Syntax::operat(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+    if (t == ID)
+    {
+        t = sc->scaner(l);
+        if (t != ASSIGN) sc->printError("ќжидалось =", l);
+
+        expression();
+
+        t = sc->scaner(l);
+        if (t != SEMICOLON) sc->printError("ќжидалось ;", l);
+    }
+    else if (t == OPENBRACE)
+    {
+        sc->setUk(uk1);
+        compOperator();
+    }
+    else if (t == SWITCH)
+    {
+        sc->setUk(uk1);
+        switchOperator();
+    }
+    else if (t != SEMICOLON)
+        sc->printError("ќжидалось ;", l);
+}
+
+void Syntax::expression(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    mult();
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+    //sc->setUk(uk1);
+
+    while(t == PLUS || t == MINUS)
+    {
+        mult();
+
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+    }
+
+    sc->setUk(uk1);
+}
+
+void Syntax::mult(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    prefix();
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+    //sc->setUk(uk1);
+
+    while(t == MULT || t == DIV || t == PERCENT)
+    {
+        prefix();
+
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+    }
+
+    sc->setUk(uk1);
+}
+
+//???
+void Syntax::prefix(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+
+    if (t == INCREMENT || t == DECREMENT || t == PLUS || t == MINUS)
+        ;
+    else sc->setUk(uk1);
+
+    postfix();
+}
+
+void Syntax::postfix(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    elem();
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+
+    if (t == INCREMENT || t == DECREMENT)
+        ;
+    else sc->setUk(uk1);
+}
+
+void Syntax::elem(){
+    TLexem l;
+    int t;
+
+    t = sc->scaner(l);
+
+    if (t == OPENBRACKET)
+    {
+        expression();
+
+        t = sc->scaner(l);
+        if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);
+    }
+    else if (t != ID && t != CONSTCHAR && t != CONSTINT8 && t != CONSTINT10
+             && t != CONSTINT16)
+        sc->printError("ќжидалось константа или идентификатор", l);
+}
+
+void Syntax::switchOperator(){
+    TLexem l;
+    int t;
+
+    t = sc->scaner(l);
+    if (t != SWITCH) sc->printError("ќжидалось switch", l);
+
+    t = sc->scaner(l);
+    if (t != OPENBRACKET) sc->printError("ќжидалось (", l);
+
+    expression();
+
+    t = sc->scaner(l);
+    if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);
+
+    t = sc->scaner(l);
+    if (t != OPENBRACE) sc->printError("ќжидалось {", l);
+
+    cases();
+
+    t = sc->scaner(l);
+    if (t == DEFAULT)
+    {
+        t = sc->scaner(l);
+        if (t != COLON) sc->printError("ќжидалось :", l);
+
+        operators();
+
+        t = sc->scaner(l);
+    }
+
+    if (t != CLOSEBRACE) sc->printError("ќжидалось }", l);
+}
+
+void Syntax::cases(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    uk1 = sc->getUk();
+    t = sc->scaner(l);
+
+    while(t == CASE)
+    {
+        t = sc->scaner(l);
+
+        if ( t != CONSTCHAR && t != CONSTINT8 && t != CONSTINT10 && t != CONSTINT16)
+                sc->printError("ќжидалась константа", l);
+
+        t = sc->scaner(l);
+        if (t != COLON) sc->printError("ќжидалось :", l);
+
+        operators();
+
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+    }
+
+    sc->setUk(uk1);
+}
+
+void Syntax::operators(){
+    TLexem l;
+    int t, uk;
+    MemUK uk1;
+
+    do{
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+        if (t == ID || t == OPENBRACE || t == SWITCH || t == SEMICOLON)
+        {
+            sc->setUk(uk1);
+            operat();
+        }
+        else if (t == BREAK)
+        {
+            t = sc->scaner(l);
+            if (t != SEMICOLON) sc->printError("ќжидалось ;", l);
+        }
+        else
+            sc->printError("ќжидалс€ оператор", l);
+
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+        sc->setUk(uk1);
+    }while(t == BREAK || t == ID || t == OPENBRACE || t == SWITCH || t == SEMICOLON);
+}
+
+
+
+
+
+
