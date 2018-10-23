@@ -18,9 +18,18 @@ enum en{ID = 1, CONSTINT10, CONSTINT8,
         CHAR = 50, INT, DOUBLE,
        CLASS = 60, VOID, MAIN, MAINFUNC, ERROR = 100, END = 200};
 
+enum DataType{
+    semInt = 1,
+    semDouble,
+    semFunc,
+    semUndefine = 0
+};
+
 #include <fstream>
 #include <iostream>
 #include <cstring>
 using namespace std;
+
+#define max(a, b) a < b ? b : a
 
 #endif // DEF_H

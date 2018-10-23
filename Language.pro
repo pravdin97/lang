@@ -7,10 +7,12 @@ SOURCES += \
         main.cpp \
     scaner.cpp \
     syntax.cpp \
-    memuk.cpp
+    memuk.cpp \
+    semant.cpp
 
 HEADERS += \
     def.h \
     scaner.h \
     syntax.h \
-    memuk.h
+    memuk.h \
+    semant.h

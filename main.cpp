@@ -10,7 +10,7 @@ int main()
     setlocale(0,"");
     TScaner scaner;
 
-    scaner.openFile("D:/Projects/lang.txt");
+    scaner.openFile("F:/Projects/qt/lang.txt");
 
     Syntax syntax(&scaner);
     syntax.program();
@@ -18,9 +18,9 @@ int main()
     TLexem l;
     int t = scaner.scaner(l);
     if (t != END)
-        scaner.printError("РћР±РЅР°СЂСѓР¶РµРЅС‚ Р»РёС€РЅРёР№ С‚РµРєСЃС‚ РїРѕСЃР»Рµ РєРѕРЅС†Р° РїСЂРѕРіСЂР°РјРјС‹", l);
+        scaner.printError("Обнаружент лишний текст после конца программы", l);
     else
-        cout << "OK";
+        cout << "OK" << endl;
 
     return 0;
 }
