@@ -2,6 +2,7 @@
 #define SEMANT_H
 
 #include "def.h"
+#include "scaner.h"
 
 #define EMPTY -1
 
@@ -18,6 +19,7 @@ class Tree
 
 public:
     static Tree *Curr;
+    static TScaner *sc;
 
     Tree(Tree *l, Tree *r, Tree *u, Node *data);
     Tree();
@@ -48,6 +50,9 @@ public:
 
     int DuplicateControl(Tree *addr, TLexem a);
 
+    DataType SemType(TLexem type);
+
+    Tree* makeBlock();
 
 };
 

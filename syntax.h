@@ -2,11 +2,14 @@
 #define SYNTAX_H
 #include <scaner.h>
 #include <memuk.h>
+#include <semant.h>
 
 class Syntax
 {
 private:
     TScaner *sc;
+
+    Tree *root;
     void descript(); //описания
     void mainfunc(); //функция main
     void data(); //данные

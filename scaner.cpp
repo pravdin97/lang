@@ -263,3 +263,8 @@ void TScaner::printError(char *err, TLexem l)
     cout << err << ". Обнаружено " << l << " Строка: " << line << endl;
     exit(1);
 }
+
+void TScaner::errMsg(char *err, TLexem l)
+{
+    cout << err << ": " << l << " Строка: " << line << endl;
+}

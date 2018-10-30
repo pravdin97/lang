@@ -10,7 +10,7 @@ int main()
     setlocale(0,"");
     TScaner scaner;
 
-    scaner.openFile("F:/Projects/qt/lang.txt");
+    scaner.openFile("D:/Projects/lang.txt");
 
     Syntax syntax(&scaner);
     syntax.program();

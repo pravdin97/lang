@@ -3,6 +3,9 @@
 Syntax::Syntax(TScaner *sc)
 {
     this->sc = sc;
+    root = new Tree();
+    root->Curr = root;
+    root->sc = sc;
 }
 
 void Syntax::program(){
@@ -51,6 +54,8 @@ void Syntax::mainfunc(){
     t = sc->scaner(l);
     if (t != MAINFUNC) sc->printError("ќжидалось main", l);
 
+    Tree* cur = root->Include(l, semFunc);
+
     t = sc->scaner(l);
     if (t != OPENBRACKET) sc->printError("ќжидалось (", l);
 
@@ -58,6 +63,8 @@ void Syntax::mainfunc(){
     if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);
 
     compOperator();
+
+    root->Curr = cur;
 }
 
 void Syntax::data(){
@@ -67,9 +74,13 @@ void Syntax::data(){
     t = sc->scaner(l);
     if (t != INT && t != DOUBLE) sc->printError("ќжидалось int или double", l);
 
+    DataType type = root->SemType(l);
+
     do{
         t = sc->scaner(l);
         if (t != ID) sc->printError("ќжидалс€ идентификатор", l);
+
+        root->Include(l, type);
 
         //----------------------------
         t = sc->scaner(l);
@@ -113,7 +124,11 @@ void Syntax::compOperator(){
     t = sc->scaner(l);
     if (t != OPENBRACE) sc->printError("ќжидалось {", l);
 
+    Tree* curr = root->makeBlock();
+
     operAndDesc();
+
+    root->Curr = curr;
 
     t = sc->scaner(l);
     if (t != CLOSEBRACE) sc->printError("ќжидалось }", l);
@@ -177,7 +192,7 @@ void Syntax::mult(){
     int t, uk;
     MemUK uk1;
 
-    prefix();
+    elem();
 
     uk1 = sc->getUk();
     t = sc->scaner(l);
@@ -185,7 +200,7 @@ void Syntax::mult(){
 
     while(t == MULT || t == DIV || t == PERCENT)
     {
-        prefix();
+        elem();
 
         uk1 = sc->getUk();
         t = sc->scaner(l);
@@ -225,9 +240,12 @@ void Syntax::postfix(){
     else sc->setUk(uk1);
 }
 
+//пп должны возвращать семантический тип?
+
 void Syntax::elem(){
     TLexem l;
     int t;
+    MemUK uk1;
 
     t = sc->scaner(l);
 
@@ -238,9 +256,28 @@ void Syntax::elem(){
         t = sc->scaner(l);
         if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);
     }
+    else if (t == INCREMENT || t == DECREMENT || t == PLUS || t == MINUS)
+    {
+        t = sc->scaner(l);
+        if (t != ID) sc->printError("ќжидалс€ идентификатор", l);
+
+        root->SemGetVar(l);
+    }
+    else if (t == ID)
+    {
+        root->SemGetVar(l);
+
+        uk1 = sc->getUk();
+        t = sc->scaner(l);
+
+        if (t == INCREMENT || t == DECREMENT)
+            ;
+        else sc->setUk(uk1);
+    }
     else if (t != ID && t != CONSTCHAR && t != CONSTINT8 && t != CONSTINT10
              && t != CONSTINT16)
         sc->printError("ќжидалось константа или идентификатор", l);
+
 }
 
 void Syntax::switchOperator(){

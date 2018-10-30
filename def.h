@@ -5,6 +5,7 @@
 #define TEXTLEN 10000
 #define NUMLEN 10
 #define KEYWORDS 10
+#define NUMSEMTYPES 2
 
 typedef char TLexem[MAXLEN];
 
@@ -28,6 +29,7 @@ enum DataType{
 #include <fstream>
 #include <iostream>
 #include <cstring>
+#include <string.h>
 using namespace std;
 
 #define max(a, b) a < b ? b : a

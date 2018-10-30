@@ -18,6 +18,7 @@ public:
     void openFile(char* path);
     int compare(TLexem lex);
     void printError(char *err, TLexem l);
+    void errMsg(char *err, TLexem l);
 };
 
 #endif // SCANER_H
