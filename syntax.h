@@ -16,11 +16,11 @@ private:
     void operAndDesc(); //операторы и описания
     void operat(); //оператор
     void compOperator(); //составной оператор
-    void expression(); //выражение
-    void mult(); //множитель
+    DataType expression(); //выражение
+    DataType mult(); //множитель
     void prefix(); //префикс
     void postfix(); //постфикс
-    void elem(); //элементарное выражение
+    DataType elem(); //элементарное выражение
     void switchOperator(); //switch
     void cases();
     void operators(); //операторы

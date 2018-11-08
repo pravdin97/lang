@@ -58,6 +58,8 @@ Tree* Tree::FindUpOneLevel(Tree *from, TLexem id)
     return NULL;
 }
 
+DataType Tree::getType() { return n->type; }
+
 void Tree::SetCurr(Tree *a) { Curr = a; }
 
 Tree* Tree::GetCurr() { return Curr; }
@@ -131,8 +133,28 @@ Tree* Tree::SemGetVar(TLexem a)
 {
     Tree *v = FindUp(Curr, a);
     if (v == NULL)
-         sc->errMsg("Отсутствует описание идентификатора", a);
+    {
+        sc->errMsg("Отсутствует описание идентификатора", a);
+        v = includeUndef(a);
+    }
     return v;
+}
+
+DataType Tree::castMult(DataType typ1, DataType typ2)
+{
+    if (typ1 == semUndefine || typ2 == semUndefine)
+        return semUndefine;
+
+    if (typ1 == semDouble || typ2 == semDouble)
+        return semDouble;
+
+    return semInt;
+}
+
+void Tree::typeAccord(DataType idType, DataType expType)
+{
+    if(idType == semInt && expType == semDouble)
+        sc->errMsg("Попытка присвоить типу int выражение типа double","");
 }
 
 void Tree::SemSetType(Tree *addr, DataType t)
@@ -156,4 +178,24 @@ DataType Tree::SemType(TLexem type)
         if (strcmp(type, TYPES[i]) == 0)
             return SEMTYPES[i];
     return semUndefine;
+}
+
+Tree* Tree::includeUndef(TLexem a)
+{
+    Tree* root = Curr;
+    while(root->Up != NULL)
+        root = root->Up;
+
+    Tree* tmpLeft = root->Left;
+
+    Tree* tmpCurr = GetCurr();
+    SetCurr(root);
+    Tree* newUnd = Include(a, semUndefine);
+
+    newUnd->Left = tmpLeft;
+    tmpLeft->Up = newUnd;
+
+    SetCurr( tmpCurr);
+
+    return newUnd;
 }

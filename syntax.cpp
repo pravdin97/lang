@@ -75,6 +75,7 @@ void Syntax::data(){
     if (t != INT && t != DOUBLE) sc->printError("ќжидалось int или double", l);
 
     DataType type = root->SemType(l);
+    DataType typ2;
 
     do{
         t = sc->scaner(l);
@@ -87,7 +88,8 @@ void Syntax::data(){
 
         if (t == ASSIGN)
         {
-            expression();
+            typ2 = expression();
+            root->typeAccord(type, typ2);
             t = sc->scaner(l);
         }
 
@@ -138,15 +140,21 @@ void Syntax::operat(){
     TLexem l;
     int t, uk;
     MemUK uk1;
+    DataType typ1, typ2;
 
     uk1 = sc->getUk();
     t = sc->scaner(l);
     if (t == ID)
     {
+        Tree* tr = root->SemGetVar(l);
+        typ1 = tr->getType();
+
         t = sc->scaner(l);
         if (t != ASSIGN) sc->printError("ќжидалось =", l);
 
-        expression();
+        typ2 = expression();
+
+        root->typeAccord(typ1, typ2);
 
         t = sc->scaner(l);
         if (t != SEMICOLON) sc->printError("ќжидалось ;", l);
@@ -165,12 +173,13 @@ void Syntax::operat(){
         sc->printError("ќжидалось ;", l);
 }
 
-void Syntax::expression(){
+DataType Syntax::expression(){
     TLexem l;
     int t, uk;
     MemUK uk1;
+    DataType typ1, typ2;
 
-    mult();
+    typ1 = mult();
 
     uk1 = sc->getUk();
     t = sc->scaner(l);
@@ -178,21 +187,25 @@ void Syntax::expression(){
 
     while(t == PLUS || t == MINUS)
     {
-        mult();
+        typ2 = mult();
+        typ1 = root->castMult(typ1, typ2);
 
         uk1 = sc->getUk();
         t = sc->scaner(l);
     }
 
     sc->setUk(uk1);
+
+    return typ1;
 }
 
-void Syntax::mult(){
+DataType Syntax::mult(){
     TLexem l;
     int t, uk;
     MemUK uk1;
+    DataType typ1, typ2;
 
-    elem();
+    typ1 = elem();
 
     uk1 = sc->getUk();
     t = sc->scaner(l);
@@ -200,13 +213,16 @@ void Syntax::mult(){
 
     while(t == MULT || t == DIV || t == PERCENT)
     {
-        elem();
+        typ2 = elem();
+        typ1 = root->castMult(typ1, typ2);
 
         uk1 = sc->getUk();
         t = sc->scaner(l);
     }
 
     sc->setUk(uk1);
+
+    return typ1;
 }
 
 //???
@@ -242,16 +258,17 @@ void Syntax::postfix(){
 
 //пп должны возвращать семантический тип?
 
-void Syntax::elem(){
+DataType Syntax::elem(){
     TLexem l;
     int t;
     MemUK uk1;
+    DataType type;
 
     t = sc->scaner(l);
 
     if (t == OPENBRACKET)
     {
-        expression();
+        type = expression();
 
         t = sc->scaner(l);
         if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);
@@ -261,11 +278,13 @@ void Syntax::elem(){
         t = sc->scaner(l);
         if (t != ID) sc->printError("ќжидалс€ идентификатор", l);
 
-        root->SemGetVar(l);
+        Tree* node = root->SemGetVar(l);
+        type = node->getType();
     }
     else if (t == ID)
     {
-        root->SemGetVar(l);
+        Tree* node = root->SemGetVar(l);
+        type = node->getType();
 
         uk1 = sc->getUk();
         t = sc->scaner(l);
@@ -278,6 +297,7 @@ void Syntax::elem(){
              && t != CONSTINT16)
         sc->printError("ќжидалось константа или идентификатор", l);
 
+    return type;
 }
 
 void Syntax::switchOperator(){
@@ -290,7 +310,9 @@ void Syntax::switchOperator(){
     t = sc->scaner(l);
     if (t != OPENBRACKET) sc->printError("ќжидалось (", l);
 
-    expression();
+    int type = expression();
+    if (type != semInt)
+        sc->errMsg("ќжидалось int", "");
 
     t = sc->scaner(l);
     if (t != CLOSEBRACKET) sc->printError("ќжидалось )", l);

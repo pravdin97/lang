@@ -30,6 +30,7 @@ public:
     Tree* FindUp(Tree *from, TLexem id);
     Tree* FindUpOneLevel(Tree* from, TLexem id);
     Tree* FindUp(TLexem id);
+    DataType getType();
 
     //semantic functions
 
@@ -53,6 +54,12 @@ public:
     DataType SemType(TLexem type);
 
     Tree* makeBlock();
+
+    static DataType castMult(DataType typ1, DataType typ2);
+
+    void typeAccord(DataType idType, DataType expType);
+
+    Tree* includeUndef(TLexem a);
 
 };
 
